@@ -3,10 +3,22 @@ import banner from '@/assets/images/banner.png';
 import hero from '@/assets/images/hero.png';
 import { Link } from 'react-router-dom';
 import Footer from '@/layouts/Footer';
+import { useTranslation } from 'react-i18next';
+import LanguageToggle from './LanguageToogle';
 
 export default function Home() {
+
+  const { t } = useTranslation();
+
   return (
     <>
+
+    <div className="container mx-auto mt-8">
+      <h1 className="text-2xl font-bold mb-4">{t('welcomeMessage')}</h1>
+      <p className="mb-4">{t('sampleText')}</p>
+      <LanguageToggle />
+    </div>
+
       <div className="flex justify-between items-center h-[calc(100vh-80px)] max-w-7xl mx-auto ">
         <div>
           <h1 className="text-6xl font-black text-primary mb-2">
