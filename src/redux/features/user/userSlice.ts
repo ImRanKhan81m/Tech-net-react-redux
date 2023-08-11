@@ -1,6 +1,6 @@
 import { auth } from '@/lib/firebase';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 interface IUser {
   user: {
@@ -8,10 +8,10 @@ interface IUser {
   };
   isLoading: boolean;
   isError: boolean;
-  error: string | undefined;
+  error: string | null;
 }
 
-interface ICredintial {
+interface ICredential {
   email: string;
   password: string;
 }
@@ -22,13 +22,21 @@ const initialState: IUser = {
   },
   isLoading: false,
   isError: false,
-  error:  undefined,
+  error:  null,
 };
 
-export const createUser = createAsyncThunk(
+export const  createUser = createAsyncThunk(
   'user/createUser',
-  async ({ email, password }: ICredintial) => {
+  async ({ email, password }: ICredential) => {
     const data = await createUserWithEmailAndPassword(auth, email, password);
+    return data.user.email;
+  }
+);
+
+export const  loginUser = createAsyncThunk(
+  'user/loginUser',
+  async ({ email, password }: ICredential) => {
+    const data = await signInWithEmailAndPassword(auth, email, password);
     return data.user.email;
   }
 );
@@ -36,11 +44,18 @@ export const createUser = createAsyncThunk(
 const userSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {},
+  reducers: {
+    setUser: (state, action: PayloadAction<string | null>) => {
+      state.user.email = action.payload;
+    },
+    setLoading : (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    }
+  },
   extraReducers : (builder) => {
     builder.addCase(createUser.pending, (state) => {
       state.isLoading = true;
-      state.error = undefined;
+      state.error = null;
       state.isError = false;
     });
     builder.addCase(createUser.fulfilled, (state, action) => {
@@ -48,11 +63,29 @@ const userSlice = createSlice({
       state.user.email = action.payload;
     });
     builder.addCase(createUser.rejected, (state, action) => {
+      state.user.email = null;
       state.isLoading = false;
       state.isError = true;
-      state.error = action.error.message;
+      state.error = action.error.message!;
     });
+    builder.addCase(loginUser.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+      state.isError = false;
+    });
+    builder.addCase(loginUser.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.user.email = action.payload;
+    });
+    builder.addCase(loginUser.rejected, (state, action) => {
+      state.user.email = null;
+      state.isLoading = false;
+      state.isError = true;
+      state.error = action.error.message!;
+    })
   }
 });
+
+export const { setUser, setLoading } = userSlice.actions;
 
 export default userSlice.reducer;

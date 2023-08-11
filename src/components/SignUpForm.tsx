@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { FcGoogle } from 'react-icons/fc';
+import { createUser } from '@/redux/features/user/userSlice';
+import { useAppDispatch } from '@/redux/hook';
 
 type UserAuthFormProps = React.HTMLAttributes<HTMLDivElement>;
 
-interface SignupFormInputs {
+interface SignUpFormInputs {
   email: string;
   password: string;
 }
@@ -21,10 +23,16 @@ export function SignupForm({ className, ...props }: UserAuthFormProps) {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignupFormInputs>();
+  } = useForm<SignUpFormInputs>();
+  const dispatch = useAppDispatch();
 
-  const onSubmit = (data: SignupFormInputs) => {
-    console.log(data);
+  const onSubmit = (data: SignUpFormInputs) => {
+    dispatch(
+      createUser({
+        email: data.email,
+        password: data.password,
+      })
+    );
   };
 
   return (
